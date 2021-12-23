@@ -7,6 +7,8 @@
 #include "graphics/ResourceManager.h"
 #include "state/Controller.h"
 #include "game/Unit.h"
+#include "scripts/Script.h"
+#include "scripts/ScriptInitializer.h"
 
 const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 800;
@@ -19,7 +21,12 @@ int main()
 	Window mainWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Game", manager);
 
 	Game theGame = Game(SCREEN_WIDTH, SCREEN_HEIGHT, manager);
-	Controller keyControl = Controller(theGame, InputType::INPUT_KEYBOARD, manager, engine, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+	ScriptExecutor executor;
+	ScriptCollection scripts = ScriptInitializer::createTestScripts();
+	std::cout << "Script loaded: " << scripts.getCollectionName() << std::endl;
+
+	Controller keyControl = Controller(theGame, InputType::INPUT_KEYBOARD, scripts, executor, engine, SCREEN_WIDTH, SCREEN_HEIGHT);
 
 	mainWindow.beginRendering(keyControl);
 }

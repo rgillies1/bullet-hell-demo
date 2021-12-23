@@ -18,13 +18,6 @@ ResourceManager::~ResourceManager()
 	}
 }
 
-/// <summary>
-/// Generates a shader using the files found at the passed paths. Stores the generated shader in this ResourceManager instance
-/// </summary>
-/// <param name="shaderName">The name assigned to the shader. Used to retreive the shader later</param>
-/// <param name="vertexPath">The path to the vertex shader's source code</param>
-/// <param name="fragmentPath">The path to the fragment shader's source code</param>
-/// <param name="geometryPath">The path to the geometry shader's source code. Note that this is optional</param>
 void ResourceManager::generateShader(std::string shaderName, const char* vertexPath, const char* fragmentPath, const char* geometryPath)
 {
 	if (geometryPath != nullptr && sizeof(geometryPath) == 0)
@@ -64,8 +57,6 @@ void ResourceManager::generateShader(std::string shaderName, const char* vertexP
 	Shader shade(vertexSourceStr.c_str(), fragSourceStr.c_str(), geometrySourceStr.c_str());
 
 	shaders.emplace(std::make_pair(shaderName, shade));
-	//std::cout << vertexSS.str() << std::endl;
-	//std::cout << fragmentSS.str() << std::endl;
 }
 
 void ResourceManager::generateShader(std::string shaderName, bool useGeometry)

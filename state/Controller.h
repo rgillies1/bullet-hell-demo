@@ -6,32 +6,29 @@
 #include "../game/Shapes/Circle.h"
 #include "../game/Shapes/CompositePolygon.h"
 #include "Engine.h"
+#include "../scripts/ScriptCollection.h"
+#include "../scripts/ScriptExecutor.h"
 enum class InputType
 {
 	INPUT_KEYBOARD, INPUT_GAMEPAD
 };
-//enum class BulletType
-//{
-//	STRAIGHT_UP,
-//	STRAIGHT_DOWN,
-//	STRAIGHT_RIGHT,
-//	STRAIGHT_LEFT
-//};
 class Controller
 {
 private:
 	Game& game;
 	InputType inputType;
-	ResourceManager& manager;
 	Engine& engine;
+	ScriptCollection& scripts;
+	ScriptExecutor& executor;
 	int width, height;
-	int numBullets = 0;
+	int numBullets = 0, lastExecutedScript = 0;
 public:
-	Controller(Game& game, InputType inputType, ResourceManager& manager, Engine& engine, int width, int height);
+	Controller(Game& game, InputType inputType, ScriptCollection& scripts, ScriptExecutor& executor, Engine& engine, int width, int height);
 	void init();
 	void processInput(GLFWwindow* window);
 	const std::vector<GameObject>& updateObjects(float timeSinceLastFrame);
 	void makeBullet(GameObject& origin, BulletType type, Sprite sprite, float bulletWidth, float bulletHeight, float posX, float posY);
+	void processScripts();
 	void clean();
 };
 

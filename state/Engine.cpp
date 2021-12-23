@@ -287,7 +287,7 @@ void Engine::sweep_and_prune(std::vector<GameObject>& objects,
 			}
 			else
 			{
-				if (next.getOriginID() != (*it)->getOriginID() && !(next.getID() < bulletBaseID && (*it)->getID() < bulletBaseID))
+				if (next.getOriginID() != (*it)->getOriginID() && !(next.getID() >= bulletBaseID && (*it)->getID() >= bulletBaseID))
 				{
 					collisionPairs.insert(CollisionPair(next, **it));
 				}
@@ -300,7 +300,7 @@ void Engine::sweep_and_prune(std::vector<GameObject>& objects,
 
 void Engine::doCollisions(Game& game)
 {
-	if (game.getObjects().size() > 2)
+	if (game.getObjects().size() > 1)
 	{
 		std::list<GameObject*> sweep;
 		std::unordered_set<CollisionPair, CollisionPairHasher, CollisionPairComparator> collisionPairs;
@@ -321,9 +321,10 @@ void Engine::doCollisions(Game& game)
 		{
 			if (!has_seperating_axis(pair))
 			{
-				//std::cout << "Collision between " << pair << std::endl;
+				std::cout << "Collision between " << pair << std::endl;
 			}
 		}
+
 		// Collisions are done
 		collisionPairs.clear();
 	}

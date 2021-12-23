@@ -26,96 +26,8 @@ void Game::init()
 	manager.generateSprite("diamond", "./graphics/textures/diamond.png", true);
 	manager.generateSprite("circle", "./graphics/textures/circle.png", true);
 	manager.generateSprite("Star", "./graphics/textures/star.png", true);
-	Sprite playerSprite = manager.getSprite("player");
-	Sprite targetSprite = manager.getSprite("Star");
-	Unit player("player", 0, playerSprite, 0, 0, 140, 140, 0.0f, 1);
-	player.setMinFireDelay(0.07f);
-
-	player.setUpdateFunction(
-		[](GameObject* obj, float timeSinceLastFrame) 
-		{
-			obj->setVelocity(glm::vec2(0, 0));
-		}
-	);
-	player.setHitboxCircle(player.getPosition().x, player.getPosition().y, player.getSize().x / 2);
-	
-	std::vector<Polygon> starData{
-		Polygon(std::vector<glm::vec2> { glm::vec2(70, 0), glm::vec2(48.73, 46.09), glm::vec2(91.63, 46.09) }),
-		Polygon(std::vector<glm::vec2> { glm::vec2(140, 53.48), glm::vec2(91.63, 46.09), glm::vec2(105, 89.35) }),
-		Polygon(std::vector<glm::vec2> { glm::vec2(113.26, 140), glm::vec2(70, 116.09), glm::vec2(105, 89.35) }),
-		Polygon(std::vector<glm::vec2> { glm::vec2(26.74, 140), glm::vec2(35, 89.35), glm::vec2(70, 116.09) }),
-		Polygon(std::vector<glm::vec2> { glm::vec2(0, 53.48), glm::vec2(48.37, 46.09), glm::vec2(35, 89.35) }),
-		Polygon(std::vector<glm::vec2> { glm::vec2(70, 116.09), glm::vec2(35, 89.35), glm::vec2(48.37, 46.09), glm::vec2(91.63, 46.09), glm::vec2(105, 89.35) })
-	};
-	//player.setHitboxCompositePolygon(starData);
-
-	Unit target("target", 1, targetSprite, 300, 400, 140, 140, 0.0f, 1);
-	glm::vec2 tarPos = target.getPosition();
-	std::vector<Polygon> tarData{
-		Polygon(std::vector<glm::vec2> { glm::vec2(70, 0) + tarPos, glm::vec2(48.73, 46.09) + tarPos, glm::vec2(91.63, 46.09) + tarPos }),
-		Polygon(std::vector<glm::vec2> { glm::vec2(140, 53.48) + tarPos, glm::vec2(91.63, 46.09) + tarPos, glm::vec2(105, 89.35) + tarPos }),
-		Polygon(std::vector<glm::vec2> { glm::vec2(113.26, 140) + tarPos, glm::vec2(70, 116.09) + tarPos, glm::vec2(105, 89.35) + tarPos }),
-		Polygon(std::vector<glm::vec2> { glm::vec2(26.74, 140) + tarPos, glm::vec2(35, 89.35) + tarPos, glm::vec2(70, 116.09) + tarPos }),
-		Polygon(std::vector<glm::vec2> { glm::vec2(0, 53.48) + tarPos, glm::vec2(48.37, 46.09) + tarPos, glm::vec2(35, 89.35) + tarPos }),
-		Polygon(std::vector<glm::vec2> { glm::vec2(70, 116.09) + tarPos, glm::vec2(35, 89.35) + tarPos, glm::vec2(48.37, 46.09) + tarPos, glm::vec2(91.63, 46.09) + tarPos, glm::vec2(105, 89.35) + tarPos })
-	};
-
-	target.setHitboxCompositePolygon(tarData);
-	//target.setHitboxCircle(target.getPosition().x, target.getPosition().y, target.getSize().x / 2);
-	objects.push_back(player);
 
 
-	target.setUpdateFunction(
-		[](GameObject* obj, float timeSinceLastFrame) 
-		{
-			std::function<void(GameObject*, float)> bullet_func = 
-				[](GameObject* obj, float timeSinceLastFrame) 
-				{ 
-					std::random_device rd;
-					std::uniform_int_distribution<int> dist(0, 3);
-					int dir = dist(rd);
-					int vel = std::max(abs(obj->getVelocity().x), abs(obj->getVelocity().y));
-					glm::vec2 newVel(0, 0);
-					switch (dir)
-					{
-					case 0:
-						newVel = glm::vec2(0, vel);
-						break;
-					case 1:
-						newVel = glm::vec2(0, -vel);
-						break;
-					case 2:
-						newVel = glm::vec2(vel, 0);
-						break;
-					case 3:
-						newVel = glm::vec2(-vel, 0);
-						break;
-					}
-					obj->setVelocity(newVel);
-				};
-			BulletInfo info = BulletInfo(BulletType::CIRCULAR, Direction::NORTH, glm::vec2(20, 20), glm::vec2(0, -300), glm::vec4(1, 1, 1, 1), 0.0f);
-			std::pair<BulletInfo, std::function<void(GameObject*, float)>> bulletPair = std::make_pair(info, bullet_func);
-			obj->getBulletsToFire().push(bulletPair);
-		});
-	objects.push_back(target);
-	//for (int i = 0; i < 100; i++)
-	//{
-	//	std::string NAME = "TEST" + std::to_string(i);
-	//	Unit* test = new Unit(NAME, 200 + i, manager.getSprite("circle"), 0 + (5*i), 0 + (10 * i), 100, 100, 0.0f, 1);
-	//	test->setHitboxCircle(target.getPosition().x, target.getPosition().y, target.getSize().x / 2);
-	//	test->setVelocity(glm::vec2(100, 0));
-	//	//std::cout << test.getName() << std::endl;
-	//	objects.push_back(*test);
-	//}
-
-	//{
-	//	Unit* t1 = new Unit("t1", 3000, manager.getSprite("circle"), 200, 200, 100, 100, 0.0f, 1);
-	//	t1->setVelocity(glm::vec2(50, 0));		
-	//	Unit* t2 = new Unit("t2", 4000, manager.getSprite("square"), 600, 600, 100, 100, 0.0f, 1);
-	//	t2->setVelocity(glm::vec2(0, -50));
-	//	objects.push_back(*t1);
-	//	objects.push_back(*t2);
-	//}
 }
 
 void Game::addObject(GameObject& toAdd)
@@ -123,9 +35,62 @@ void Game::addObject(GameObject& toAdd)
 	objects.push_back(toAdd);
 }
 
+void Game::addObject(ObjectInfo& info)
+{
+	GameObject toAdd(info.name, info.id, manager.getSprite(info.spriteName),
+		info.pos_x, info.pos_y, info.rotation, info.size_x, info.size_y,
+		info.vel_x, info.vel_y, info.color_r, info.color_b, info.color_g,
+		info.color_a);
+	toAdd.setUpdateFunction(info.updateFunction);
+	toAdd.setMinFireDelay(info.def_minFireDelay);
+	switch (info.hitboxShape)
+	{
+	case HitboxShape::CIRCLE:
+		toAdd.setHitboxCircle(toAdd.getPosition().x, toAdd.getPosition().y, info.hitboxInfo[0]);
+		break;
+	case HitboxShape::POLYGON:
+	{
+		std::vector<glm::vec2> coords;
+		for (int i = 0; i < info.hitboxInfo.size() - 1; i += 2)
+		{
+			float x_coord = info.hitboxInfo[i];
+			float y_coord = info.hitboxInfo[i + 1];
+			glm::vec2 coord(x_coord, y_coord);
+			coords.push_back(coord);
+		}
+		toAdd.setHitboxPolygon(coords);
+	}
+		break;
+	case HitboxShape::COMPOSITE_POLYGON:
+	{
+		std::vector<Polygon> polys;
+		std::vector<glm::vec2> polyHitboxes;
+		for (int i = 0; i < info.hitboxInfo.size() - 1; i += 2)
+		{
+			float x_coord = info.hitboxInfo[i];
+			float y_coord = info.hitboxInfo[i + 1];
+			if (x_coord == y_coord == -1.0f)
+			{
+				polys.push_back(Polygon(polyHitboxes));
+				polyHitboxes.clear();
+			}
+			glm::vec2 coord(x_coord, y_coord);
+			polyHitboxes.push_back(coord);
+		}
+		toAdd.setHitboxCompositePolygon(polys);
+	}
+		break;
+	}
+
+	objects.push_back(toAdd);
+}
+
 void Game::fireNormalBullet(GameObject& from, BulletType type, Direction direction, glm::vec2 size, glm::vec2 velocity,
 	glm::vec4 color, float rotation)
 {
+	float time = glfwGetTime() - from.getTimeOfLastFire();
+	if (abs(time) < from.getMinFireDelay()) return;
+	else from.setTimeOfLastFire(glfwGetTime());
 	float x = 0, y = 0;
 	switch (direction)
 	{

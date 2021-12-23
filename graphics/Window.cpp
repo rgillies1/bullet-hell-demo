@@ -220,7 +220,6 @@ bool Window::beginRendering(Controller controller)
 		for (const GameObject& object : objects)
 		{
 			draw(object.getSprite(), object.getPosition(), object.getSize(), object.getRotation(), object.getColor());
-			if(object.getName() == "player") draw(manager.getSprite("circle"), object.getPosition(), object.getSize(), object.getRotation(), object.getColor());
 		}
 
 		controller.clean();

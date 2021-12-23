@@ -7,6 +7,7 @@
 #include "../graphics/ResourceManager.h"
 #include <glm/gtx/hash.hpp>
 #include "../game/BulletType.h"
+#include "../scripts/Script.h"
 
 class Game
 {
@@ -33,6 +34,7 @@ public:
 	void init();
 	void updateObjects(float timeSinceLastUpdate);
 	void addObject(GameObject& toAdd);
+	void addObject(ObjectInfo& info);
 	void fireNormalBullet(GameObject& from, BulletType type, Direction direction, glm::vec2 size,
 		glm::vec2 velocity, glm::vec4 color, float rotation);
 	void fireNormalBullet(GameObject& from, BulletInfo info, std::function<void(GameObject*, float)> bulletFunction);
@@ -49,6 +51,21 @@ public:
 	{
 		return paused;
 	};
+	bool objectWithIDIsAlive(int id)
+	{
+		try
+		{
+			return objects[id].isAlive();
+		}
+		catch (std::exception)
+		{
+			return false;
+		}
+	}
+	void killObjectById(int id)
+	{
+		objects[id].kill();
+	}
 };
 
 #endif
