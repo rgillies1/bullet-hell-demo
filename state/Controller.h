@@ -1,6 +1,8 @@
 #ifndef CONTROLLER_H
 #define CONTROLLER_H
 
+#include <unordered_map>
+
 #include "Game.h"
 #include "../game/Shapes/Polygon.h"
 #include "../game/Shapes/Circle.h"
@@ -8,6 +10,8 @@
 #include "Engine.h"
 #include "../scripts/ScriptCollection.h"
 #include "../scripts/ScriptExecutor.h"
+#include "Bindings.h"
+
 enum class InputType
 {
 	INPUT_KEYBOARD, INPUT_GAMEPAD
@@ -20,6 +24,7 @@ private:
 	Engine& engine;
 	ScriptCollection& scripts;
 	ScriptExecutor& executor;
+	std::unordered_map<Binding, int> keyBinds;
 	int width, height;
 	int numBullets = 0, lastExecutedScript = 0;
 public:

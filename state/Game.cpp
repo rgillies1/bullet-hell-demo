@@ -1,5 +1,4 @@
 #include "Game.h"
-#include "../game/Unit.h"
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <random>
@@ -27,7 +26,18 @@ void Game::init()
 	manager.generateSprite("circle", "./graphics/textures/circle.png", true);
 	manager.generateSprite("Star", "./graphics/textures/star.png", true);
 
+	keyStrokes.emplace(Binding::PLAYER_MOVE_UP, false);
+	keyStrokes.emplace(Binding::PLAYER_MOVE_DOWN, false);
+	keyStrokes.emplace(Binding::PLAYER_MOVE_LEFT, false);
+	keyStrokes.emplace(Binding::PLAYER_MOVE_RIGHT, false);
+	keyStrokes.emplace(Binding::PLAYER_FIRE_UP, false);
+	keyStrokes.emplace(Binding::PLAYER_FIRE_DOWN, false);
+	keyStrokes.emplace(Binding::PLAYER_FIRE_LEFT, false);
+	keyStrokes.emplace(Binding::PLAYER_FIRE_RIGHT, false);
 
+	properties.emplace("player_move_speed", "500.0");
+	properties.emplace("player_bullet_speed", "1000.0");
+	properties.emplace("player_bullet_size", "20.0");
 }
 
 void Game::addObject(GameObject& toAdd)
@@ -39,8 +49,8 @@ void Game::addObject(ObjectInfo& info)
 {
 	GameObject toAdd(info.name, info.id, manager.getSprite(info.spriteName),
 		info.pos_x, info.pos_y, info.rotation, info.size_x, info.size_y,
-		info.vel_x, info.vel_y, info.color_r, info.color_b, info.color_g,
-		info.color_a);
+		info.vel_x, info.vel_y, info.accel_x, info.accel_y, info.color_r, 
+		info.color_b, info.color_g, info.color_a);
 	toAdd.setUpdateFunction(info.updateFunction);
 	toAdd.setMinFireDelay(info.def_minFireDelay);
 	switch (info.hitboxShape)
@@ -85,73 +95,6 @@ void Game::addObject(ObjectInfo& info)
 	objects.push_back(toAdd);
 }
 
-void Game::fireNormalBullet(GameObject& from, BulletType type, Direction direction, glm::vec2 size, glm::vec2 velocity,
-	glm::vec4 color, float rotation)
-{
-	float time = glfwGetTime() - from.getTimeOfLastFire();
-	if (abs(time) < from.getMinFireDelay()) return;
-	else from.setTimeOfLastFire(glfwGetTime());
-	float x = 0, y = 0;
-	switch (direction)
-	{
-	case Direction::NORTH:
-		x = from.getPosition().x + (from.getSize().x / 2);
-		x -= (size.x / 2);
-		y = from.getPosition().y;
-		y -= size.y;
-		break;
-	case Direction::EAST:
-		x = from.getPosition().x;
-		x -= size.x;
-		y = from.getPosition().y + (from.getSize().y / 2);
-		y -= (size.y / 2);
-		break;
-	case Direction::SOUTH:
-		x = from.getPosition().x + (from.getSize().x / 2);
-		x -= (size.x / 2);
-		y = from.getPosition().y + from.getSize().y;
-		break;
-	case Direction::WEST:
-		x = from.getPosition().x + from.getSize().x;
-		y = from.getPosition().y + (from.getSize().y / 2);
-		y -= (size.y / 2);
-		break;
-	}
-	glm::vec2 bulletPosition(x, y);
-
-	Sprite& texture = manager.getSprite("player");
-	switch (type)
-	{
-	case BulletType::CIRCULAR:
-		texture = manager.getSprite("circle");
-		
-		break;
-	case BulletType::RECTANGULAR:
-		break;
-	case BulletType::TRIANGULAR:
-		break;
-	}
-
-	GameObject& bullet = fireBullet(from, texture, bulletPosition, size, velocity, color, rotation, [](GameObject*, float) {});
-
-	switch (type)
-	{
-	case BulletType::CIRCULAR:
-		bullet.setHitboxCircle(bulletPosition.x, bulletPosition.y, bullet.getSize().x / 2);
-		break;
-	case BulletType::RECTANGULAR:
-		break;
-	case BulletType::TRIANGULAR:
-		break;
-	}
-}
-
-void Game::fireNormalBullet(GameObject& from, BulletInfo info, std::function<void(GameObject*, float)> bulletFunction)
-{
-	fireNormalBullet(from, info.type, info.direction, info.size, info.velocity, info.color, info.rotation);
-	temp[temp.size() - 1].setUpdateFunction(bulletFunction);
-}
-
 void Game::adjustPosition(GameObject& obj)
 {
 	float objX = obj.getPosition().x;
@@ -181,30 +124,171 @@ void Game::adjustPosition(GameObject& obj)
 	}
 }
 
-GameObject& Game::fireBullet(GameObject& from, Sprite texture, glm::vec2 position, glm::vec2 size,
-	glm::vec2 velocity, glm::vec4 color, float rotation, std::function<void(GameObject*, float)> bulletfunc)
-{
-	std::string name = from.getName() + "_bullet";
-	int id = bulletIDBase + (lifetimeBulletsFired++);
-	GameObject* bullet = new GameObject(name, id, texture, position, rotation, size, velocity, color);
-	bullet->setUpdateFunction(bulletfunc);
-	bullet->setOriginID(from.getID());
-	temp.push_back(*bullet);
-	return temp[temp.size() - 1];
-}
-
 void Game::processBullets(GameObject& obj)
 {
-	std::queue<std::pair<BulletInfo, std::function<void(GameObject*, float)>>>& bulletInfo = obj.getBulletsToFire();
+	std::queue<ObjectInfo>& bulletInfo = obj.getBulletsToFire();
 	if (!bulletInfo.empty())
 	{
 		for (int index = 0; index < bulletInfo.size(); index++)
 		{
-			BulletInfo info = bulletInfo.front().first;
-			std::function<void(GameObject*, float)> bulletFunction = bulletInfo.front().second;
+			ObjectInfo info = bulletInfo.front();
 			bulletInfo.pop();
-			fireNormalBullet(obj, info, bulletFunction);
+			fireBullet(obj, info);
 		}
+	}
+}
+
+void Game::fireBullet(GameObject& from, ObjectInfo bulletInfo)
+{
+	int bulletID = bulletIDBase + lifetimeBulletsFired++;
+	GameObject bullet(bulletInfo.name, bulletID, manager.getSprite(bulletInfo.spriteName), bulletInfo.pos_x,
+		bulletInfo.pos_y, bulletInfo.rotation, bulletInfo.size_x, bulletInfo.size_y, bulletInfo.vel_x,
+		bulletInfo.vel_y, bulletInfo.accel_x, bulletInfo.accel_y, bulletInfo.color_r, bulletInfo.color_g,
+		bulletInfo.color_b, bulletInfo.color_a);
+	bullet.setMinFireDelay(bulletInfo.def_minFireDelay);
+	bullet.setUpdateFunction(bulletInfo.updateFunction);
+	bullet.setOriginID(from.getID());
+
+
+	addObject(bullet);
+}
+
+void Game::processKeystrokes()
+{
+	std::string name = "Player_bullet", spriteName = "circle";
+	int id = 0;
+	float pos_x = 0, pos_y = 0;
+	float rotation = 0.0f;
+	float size_x = atof(properties["player_bullet_size"].c_str()), size_y = size_x;
+	float vel_x = 0.0f, vel_y = 0.0f;
+	float accel_x = 0.0f, accel_y = 0.0f;
+	float color_r = 0.0f, color_g = 255.0f;
+	float color_b = 255.0f, color_a = 1.0f;
+	float minFireDelay = 0.10f;
+	std::function<void(GameObject*, float)> updateFunction = [](GameObject* obj, float){};
+	std::vector<float> hitboxInfo{ size_x / 2.0f };
+
+
+	if (keyStrokes[Binding::PLAYER_MOVE_UP] == true)
+	{
+		float moveSpeed = atof(properties["player_move_speed"].c_str());
+		GameObject& player = objects[0];
+		player.setVelocity(player.getVelocity().x, -moveSpeed);
+	}
+	if (keyStrokes[Binding::PLAYER_MOVE_DOWN] == true)
+	{
+		float moveSpeed = atof(properties["player_move_speed"].c_str());
+		GameObject& player = objects[0];
+		player.setVelocity(player.getVelocity().x, moveSpeed);
+	}
+	if (keyStrokes[Binding::PLAYER_MOVE_LEFT] == true)
+	{
+		float moveSpeed = atof(properties["player_move_speed"].c_str());
+		GameObject& player = objects[0];
+		player.setVelocity(-moveSpeed, player.getVelocity().y);
+	}
+	if (keyStrokes[Binding::PLAYER_MOVE_RIGHT] == true)
+	{
+		float moveSpeed = atof(properties["player_move_speed"].c_str());
+		GameObject& player = objects[0];
+		player.setVelocity(moveSpeed, player.getVelocity().y);
+	}
+	if (keyStrokes[Binding::PLAYER_FIRE_UP] == true)
+	{
+		float bulletSpeed = atof(properties["player_bullet_speed"].c_str());
+		GameObject& player = objects[0];
+		player.setRotation(0.0f);
+		float time = glfwGetTime() - player.getTimeOfLastFire();
+		if (abs(time) < player.getMinFireDelay()) return;
+		else player.setTimeOfLastFire(glfwGetTime());
+
+		pos_x = (player.getPosition().x + (player.getSize().x / 2)) - (size_x / 2);
+		pos_y = (player.getPosition().y - size_y);
+		vel_y = -bulletSpeed;
+
+		ObjectInfo bullet(name, id, spriteName,
+			pos_x, pos_y, rotation, size_x, size_y,
+			vel_x, vel_y, accel_x, accel_y, color_r,
+			color_g, color_b, color_a, minFireDelay,
+			updateFunction, HitboxShape::CIRCLE,
+			hitboxInfo);
+
+		fireBullet(player, bullet);
+	}
+	if (keyStrokes[Binding::PLAYER_FIRE_DOWN] == true)
+	{
+
+		float bulletSpeed = atof(properties["player_bullet_speed"].c_str());
+		GameObject& player = objects[0];
+		player.setRotation(180.0f);
+		float time = glfwGetTime() - player.getTimeOfLastFire();
+		if (abs(time) < player.getMinFireDelay()) return;
+		else player.setTimeOfLastFire(glfwGetTime());
+
+		pos_x = (player.getPosition().x + (player.getSize().x / 2)) - (size_x / 2);
+		pos_y = (player.getPosition().y + player.getSize().y);
+		vel_y = bulletSpeed;
+
+		ObjectInfo bullet(name, id, spriteName,
+			pos_x, pos_y, rotation, size_x, size_y,
+			vel_x, vel_y, accel_x, accel_y, color_r,
+			color_g, color_b, color_a, minFireDelay,
+			updateFunction, HitboxShape::CIRCLE,
+			hitboxInfo);
+
+		fireBullet(player, bullet);
+	}
+	if (keyStrokes[Binding::PLAYER_FIRE_LEFT] == true)
+	{
+		float bulletSpeed = atof(properties["player_bullet_speed"].c_str());
+		GameObject& player = objects[0];
+		player.setRotation(270.0f);
+		float time = glfwGetTime() - player.getTimeOfLastFire();
+		if (abs(time) < player.getMinFireDelay()) return;
+		else player.setTimeOfLastFire(glfwGetTime());
+
+		pos_x = player.getPosition().x - size_x;
+		pos_y = (player.getPosition().y + (player.getSize().y / 2)) - (size_y / 2);
+		vel_x = -bulletSpeed;
+
+		ObjectInfo bullet(name, id, spriteName,
+			pos_x, pos_y, rotation, size_x, size_y,
+			vel_x, vel_y, accel_x, accel_y, color_r,
+			color_g, color_b, color_a, minFireDelay,
+			updateFunction, HitboxShape::CIRCLE,
+			hitboxInfo);
+
+		fireBullet(player, bullet);
+	}
+	if (keyStrokes[Binding::PLAYER_FIRE_RIGHT] == true)
+	{
+		float bulletSpeed = atof(properties["player_bullet_speed"].c_str());
+		GameObject& player = objects[0];
+		player.setRotation(90.0f);
+		float time = glfwGetTime() - player.getTimeOfLastFire();
+		if (abs(time) < player.getMinFireDelay()) return;
+		else player.setTimeOfLastFire(glfwGetTime());
+
+		pos_x = player.getPosition().x + player.getSize().x;
+		pos_y = (player.getPosition().y + (player.getSize().y / 2)) - (size_y / 2);
+		vel_x = bulletSpeed;
+
+		ObjectInfo bullet(name, id, spriteName,
+			pos_x, pos_y, rotation, size_x, size_y,
+			vel_x, vel_y, accel_x, accel_y, color_r,
+			color_g, color_b, color_a, minFireDelay,
+			updateFunction, HitboxShape::CIRCLE,
+			hitboxInfo);
+
+		fireBullet(player, bullet);
+	}
+	if (keyStrokes[Binding::PLAYER_SLOW] == true)
+	{
+		properties["player_move_speed"] = "100.0";
+	}
+	else
+	{
+		properties["player_move_speed"] = "500.0";
 	}
 }
 
@@ -215,10 +299,10 @@ std::vector<GameObject>& Game::getObjects()
 
 void Game::updateObjects(float timeSinceLastUpdate)
 {
+	processKeystrokes();
 	for (GameObject& obj : objects)
 	{
 		if (paused) return;
-		glm::vec2 oldpos = obj.getPosition();
 		obj.update(timeSinceLastUpdate);
 		processBullets(obj);
 		adjustPosition(obj);

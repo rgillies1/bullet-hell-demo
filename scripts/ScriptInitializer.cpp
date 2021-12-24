@@ -8,6 +8,7 @@ ObjectInfo makeTestTarget(float x, float y)
     float rotation = 0.0f;
     float size_x = 70.0f, size_y = 70.0f;
     float vel_x = 0.0f, vel_y = -100.0f;
+    float accel_x = 0.0f, accel_y = 0.0f;
     float color_r = 255.0f, color_g = 0.0f;
     float color_b = 0.0f, color_a = 1.0f;
     float minFireDelay = 0.0f;
@@ -17,11 +18,14 @@ ObjectInfo makeTestTarget(float x, float y)
     };
     std::vector<float> hitboxInfo{ size_x / 2.0f };
 
-    return ObjectInfo(name, id, spriteName,
+    ObjectInfo info(name, id, spriteName,
         pos_x, pos_y, rotation, size_x, size_y,
-        vel_x, vel_y, color_r, color_g, color_b,
-        color_a, minFireDelay, updateFunction,
-        HitboxShape::CIRCLE, hitboxInfo);
+        vel_x, vel_y, accel_x, accel_y, color_r,
+        color_g, color_b, color_a, minFireDelay,
+        updateFunction, HitboxShape::CIRCLE,
+        hitboxInfo);
+
+    return info;
 }
 
 ScriptCollection ScriptInitializer::createGameScripts()
@@ -44,7 +48,9 @@ ScriptCollection ScriptInitializer::createTestScripts()
     objects.push_back(makeTestTarget(500, 600));
 
     commands.push_back(Command(ScriptCommand::PLACE_OBJECT, 0));
+    commands.push_back(Command(ScriptCommand::WAIT_FOR, 5));
     commands.push_back(Command(ScriptCommand::PLACE_OBJECT, 0));
+    commands.push_back(Command(ScriptCommand::WAIT_FOR, 5));
     commands.push_back(Command(ScriptCommand::PLACE_OBJECT, 0));
 
     collection.addScript(Script("make target", 1, 0, 0, objects, commands));

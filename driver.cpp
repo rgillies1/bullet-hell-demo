@@ -6,7 +6,6 @@
 #include "graphics/Window.h"
 #include "graphics/ResourceManager.h"
 #include "state/Controller.h"
-#include "game/Unit.h"
 #include "scripts/Script.h"
 #include "scripts/ScriptInitializer.h"
 

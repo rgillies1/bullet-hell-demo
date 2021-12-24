@@ -17,8 +17,9 @@ public:
 		int id = 0;
 		float pos_x = 100.0f, pos_y = 100.0f;
 		float rotation = 0.0f;
-		float size_x = 70.0f, size_y = 70.0f;
+		float size_x = 100.0f, size_y = 100.0f;
 		float vel_x = 0.0f, vel_y = 0.0f;
+		float accel_x = 0.0f, accel_y = 0.0f;
 		float color_r = 0.0f, color_g = 255.0f;
 		float color_b = 255.0f, color_a = 1.0f;
 		float minFireDelay = 0.10f;
@@ -30,9 +31,10 @@ public:
 
 		ObjectInfo player(name, id, spriteName,
 			pos_x, pos_y, rotation, size_x, size_y,
-			vel_x, vel_y, color_r, color_g, color_b,
-			color_a, minFireDelay, updateFunction,
-			HitboxShape::CIRCLE, hitboxInfo);
+			vel_x, vel_y, accel_x, accel_y, color_r,
+			color_g, color_b, color_a, minFireDelay,
+			updateFunction, HitboxShape::CIRCLE,
+			hitboxInfo);
 
 		std::vector<ObjectInfo> objects{ player };
 		std::vector<Command> commands{ Command(ScriptCommand::PLACE_OBJECT, 0) };

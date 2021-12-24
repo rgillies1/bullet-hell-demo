@@ -1,5 +1,4 @@
 #include "Controller.h"
-#include "../game/Unit.h"
 #include <iostream>
 #include <algorithm>
 int num = 0;
@@ -14,6 +13,18 @@ Controller::Controller(Game& game, InputType inputType, ScriptCollection& script
 void Controller::init()
 {
 	game.init();
+
+	keyBinds.emplace(Binding::PLAYER_MOVE_UP, GLFW_KEY_W);
+	keyBinds.emplace(Binding::PLAYER_MOVE_DOWN, GLFW_KEY_S);
+	keyBinds.emplace(Binding::PLAYER_MOVE_LEFT, GLFW_KEY_A);
+	keyBinds.emplace(Binding::PLAYER_MOVE_RIGHT, GLFW_KEY_D);
+	keyBinds.emplace(Binding::PLAYER_FIRE_UP, GLFW_KEY_I);
+	keyBinds.emplace(Binding::PLAYER_FIRE_DOWN, GLFW_KEY_K);
+	keyBinds.emplace(Binding::PLAYER_FIRE_LEFT, GLFW_KEY_J);
+	keyBinds.emplace(Binding::PLAYER_FIRE_RIGHT, GLFW_KEY_L);
+	keyBinds.emplace(Binding::PLAYER_SLOW, GLFW_KEY_LEFT_SHIFT);
+	keyBinds.emplace(Binding::PAUSE, GLFW_KEY_SPACE);
+	keyBinds.emplace(Binding::QUIT, GLFW_KEY_ESCAPE);
 }
 
 void Controller::processInput(GLFWwindow* window)
@@ -24,54 +35,44 @@ void Controller::processInput(GLFWwindow* window)
 		glfwSetWindowShouldClose(window, true);
 	if (!game.isPaused())
 	{
-		if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-			moveSpeed = 100.0f;
-		if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-		{
-			GameObject& player = game.getObjects().at(0);
-			player.setVelocity(glm::vec2(player.getVelocity().x, -moveSpeed));
-		}
-		if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-		{
-			GameObject& player = game.getObjects().at(0);
-			player.setVelocity(glm::vec2(player.getVelocity().x, moveSpeed));
-		}
-		if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-		{
-			GameObject& player = game.getObjects().at(0);
-			player.setVelocity(glm::vec2(-moveSpeed, player.getVelocity().y));
-		}
-		if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-		{
-			GameObject& player = game.getObjects().at(0);
-			player.setVelocity(glm::vec2(moveSpeed, player.getVelocity().y));
-		}
-		if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS)
-		{
-			GameObject& player = game.getObjects().at(0);
-			game.fireNormalBullet(player, BulletType::CIRCULAR, Direction::NORTH, glm::vec2(20, 20), glm::vec2(0, -def_bullet_speed), glm::vec4(0, 255, 255, 1), 0.0f);
-			player.setRotation(0.0f);
-		}
-		if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS)
-		{
-			GameObject& player = game.getObjects().at(0);
-			game.fireNormalBullet(player, BulletType::CIRCULAR, Direction::SOUTH, glm::vec2(20, 20), glm::vec2(0, def_bullet_speed), glm::vec4(0, 255, 255, 1), 0.0f);
-			player.setRotation(180.0f);
-		}
-		if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS)
-		{
-			GameObject& player = game.getObjects().at(0);
-			game.fireNormalBullet(player, BulletType::CIRCULAR, Direction::EAST, glm::vec2(20, 20), glm::vec2(-def_bullet_speed, 0), glm::vec4(0, 255, 255, 1), 0.0f);
-			player.setRotation(270.0f);
-		}
-		if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS)
-		{
-			GameObject& player = game.getObjects().at(0);
-			game.fireNormalBullet(player, BulletType::CIRCULAR, Direction::WEST, glm::vec2(20, 20), glm::vec2(def_bullet_speed, 0), glm::vec4(0, 255, 255, 1), 0.0f);
-			player.setRotation(90.0f);
-		}
+		if (glfwGetKey(window, keyBinds[Binding::PLAYER_SLOW]) == GLFW_PRESS)
+			game.getKeyStrokes()[Binding::PLAYER_SLOW] = true;
+		else
+			game.getKeyStrokes()[Binding::PLAYER_SLOW] = false;
+		if (glfwGetKey(window, keyBinds[Binding::PLAYER_MOVE_UP]) == GLFW_PRESS)
+			game.getKeyStrokes()[Binding::PLAYER_MOVE_UP] = true;
+		else
+			game.getKeyStrokes()[Binding::PLAYER_MOVE_UP] = false;
+		if (glfwGetKey(window, keyBinds[Binding::PLAYER_MOVE_DOWN]) == GLFW_PRESS)
+			game.getKeyStrokes()[Binding::PLAYER_MOVE_DOWN] = true;
+		else
+			game.getKeyStrokes()[Binding::PLAYER_MOVE_DOWN] = false;
+		if (glfwGetKey(window, keyBinds[Binding::PLAYER_MOVE_LEFT]) == GLFW_PRESS)
+			game.getKeyStrokes()[Binding::PLAYER_MOVE_LEFT] = true;
+		else
+			game.getKeyStrokes()[Binding::PLAYER_MOVE_LEFT] = false;
+		if (glfwGetKey(window, keyBinds[Binding::PLAYER_MOVE_RIGHT]) == GLFW_PRESS)
+			game.getKeyStrokes()[Binding::PLAYER_MOVE_RIGHT] = true;
+		else
+		game.getKeyStrokes()[Binding::PLAYER_MOVE_RIGHT] = false;
+		if (glfwGetKey(window, keyBinds[Binding::PLAYER_FIRE_UP]) == GLFW_PRESS)
+			game.getKeyStrokes()[Binding::PLAYER_FIRE_UP] = true;
+		else
+			game.getKeyStrokes()[Binding::PLAYER_FIRE_UP] = false;
+		if (glfwGetKey(window, keyBinds[Binding::PLAYER_FIRE_DOWN]) == GLFW_PRESS)
+			game.getKeyStrokes()[Binding::PLAYER_FIRE_DOWN] = true;
+		else
+			game.getKeyStrokes()[Binding::PLAYER_FIRE_DOWN] = false;
+		if (glfwGetKey(window, keyBinds[Binding::PLAYER_FIRE_LEFT]) == GLFW_PRESS)
+			game.getKeyStrokes()[Binding::PLAYER_FIRE_LEFT] = true;
+		else
+			game.getKeyStrokes()[Binding::PLAYER_FIRE_LEFT] = false;
+		if (glfwGetKey(window, keyBinds[Binding::PLAYER_FIRE_RIGHT]) == GLFW_PRESS)
+			game.getKeyStrokes()[Binding::PLAYER_FIRE_RIGHT] = true;
+		else
+			game.getKeyStrokes()[Binding::PLAYER_FIRE_RIGHT] = false;
 	}
-	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+	if (glfwGetKey(window, keyBinds[Binding::PAUSE]) == GLFW_PRESS)
 	{
 		game.togglePause();
 	}

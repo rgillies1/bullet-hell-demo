@@ -8,6 +8,7 @@
 #include <glm/gtx/hash.hpp>
 #include "../game/BulletType.h"
 #include "../scripts/Script.h"
+#include "Bindings.h"
 
 class Game
 {
@@ -19,14 +20,17 @@ private:
 	std::vector<GameObject> objects;
 	std::vector<GameObject> temp;
 
+	std::unordered_map<Binding, bool> keyStrokes;
+	std::unordered_map<std::string, std::string> properties;
+
 	int lifetimeBulletsFired = 0;
 	const int bulletIDBase = 90000;
 
 	void adjustPosition(GameObject& obj);
-	GameObject& fireBullet(GameObject& from, Sprite texture, glm::vec2 position,
-		glm::vec2 size, glm::vec2 velocity, glm::vec4 color, float rotation,
-		std::function<void(GameObject*, float)> bulletfunc = [](GameObject*, float) {});
 	void processBullets(GameObject& obj);
+	void fireBullet(GameObject& from, ObjectInfo bulletInfo);
+
+	void processKeystrokes();
 public:
 	Game(float playableWidth, float playableHeight, ResourceManager& manager);
 	~Game();
@@ -35,9 +39,6 @@ public:
 	void updateObjects(float timeSinceLastUpdate);
 	void addObject(GameObject& toAdd);
 	void addObject(ObjectInfo& info);
-	void fireNormalBullet(GameObject& from, BulletType type, Direction direction, glm::vec2 size,
-		glm::vec2 velocity, glm::vec4 color, float rotation);
-	void fireNormalBullet(GameObject& from, BulletInfo info, std::function<void(GameObject*, float)> bulletFunction);
 	int getBulletIdBase()
 	{
 		return bulletIDBase;
@@ -65,6 +66,10 @@ public:
 	void killObjectById(int id)
 	{
 		objects[id].kill();
+	}
+	std::unordered_map<Binding, bool>& getKeyStrokes()
+	{
+		return keyStrokes;
 	}
 };
 

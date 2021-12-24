@@ -21,6 +21,57 @@
 #include "Shapes/CompositePolygon.h"
 #include "Shapes/Circle.h"
 
+class GameObject;
+
+enum class HitboxShape
+{
+	CIRCLE, POLYGON, COMPOSITE_POLYGON
+};
+
+struct ObjectInfo
+{
+	std::string name, spriteName;
+	int id;
+	float vel_x, vel_y, accel_x, accel_y, size_x, size_y, pos_x, pos_y, color_r, color_g, color_b, color_a, rotation, def_minFireDelay;
+	std::function<void(GameObject*, float)> updateFunction;
+	HitboxShape hitboxShape;
+	std::vector<float> hitboxInfo;
+	ObjectInfo(std::string name,
+		int id, std::string spriteName,
+		float pos_x, float pos_y,
+		float rotation, float size_x,
+		float size_y, float vel_x,
+		float vel_y , float accel_x,
+		float accel_y, float color_r,
+		float color_g, float color_b,
+		float color_a, float minFireDelay,
+		std::function<void(GameObject*, float)> updateFunction,
+		HitboxShape hitboxShape,
+		std::vector<float> hitboxInfo)
+	{
+		this->name = name;
+		this->id = id;
+		this->spriteName = spriteName;
+		this->pos_x = pos_x;
+		this->pos_y = pos_y;
+		this->rotation = rotation;
+		this->size_x = size_x;
+		this->size_y = size_y;
+		this->vel_x = vel_x;
+		this->vel_y = vel_y;
+		this->accel_x = accel_x;
+		this->accel_y = accel_y;
+		this->color_r = color_r;
+		this->color_b = color_b;
+		this->color_g = color_g;
+		this->color_a = color_a;
+		this->def_minFireDelay = minFireDelay;
+		this->updateFunction = updateFunction;
+		this->hitboxShape = hitboxShape;
+		this->hitboxInfo = hitboxInfo;
+	}
+};
+
 class GameObject
 {
 private:
@@ -31,20 +82,20 @@ private:
 	float		timeOfLastFire;
 	float		minFireDelay;
 	bool		alive;
-	glm::vec2	position, size, velocity;
+	glm::vec2	position, size, velocity, acceleration;
 	glm::vec4	color;
 	Sprite		sprite;
 
 	std::function<void(GameObject*, float)> updateFunction;
-	//std::queue<BulletInfo> toFire;
-	std::queue<std::pair<BulletInfo, std::function<void(GameObject*, float)>>> toFire;
+	std::queue<ObjectInfo> toFire;
 
 	std::shared_ptr<Shape> hitbox;
 	void buildDefaultHitbox();
 public:
-	GameObject(std::string name, int id, Sprite sprite, glm::vec2 position, float rotation, glm::vec2 size, glm::vec2 velocity, glm::vec4 color);
+	GameObject(std::string name, int id, Sprite sprite, glm::vec2 position, float rotation, glm::vec2 size, 
+		glm::vec2 velocity, glm::vec2 acceleration, glm::vec4 color);
 	GameObject(std::string name, int id, Sprite sprite, float posX, float posY, float rotation, float sizeX, float sizeY,
-		float velocityX, float velocityY, float red, float green, float blue, float alpha);
+		float velocityX, float velocityY, float accelerationX, float accelerationY, float red, float green, float blue, float alpha);
 
 	bool					isAlive() const;
 	std::string				getName() const;
@@ -54,13 +105,13 @@ public:
 	glm::vec2				getPosition() const;
 	glm::vec2				getSize() const;
 	glm::vec2				getVelocity() const;
+	glm::vec2				getAcceleration() const;
 	glm::vec4				getColor() const;
 	float					getRotation() const;
 	float					getTimeOfLastFire() const;
 	float					getMinFireDelay() const;
 	std::shared_ptr<Shape>& getHitbox();
-	std::queue<std::pair<BulletInfo, std::function<void(GameObject*, float)>>>&		
-							getBulletsToFire();
+	std::queue<ObjectInfo>&	getBulletsToFire();
 
 	void setOriginID(int originId);
 	void setSprite(Sprite sprite);
@@ -70,6 +121,8 @@ public:
 	void setSize(float sizeX, float sizeY);
 	void setVelocity(glm::vec2 velocity);
 	void setVelocity(float velocityX, float velocityY);
+	void setAcceleration(glm::vec2 acceleration);
+	void setAcceleration(float accelerationX, float accelerationY);
 	void setColor(glm::vec4 color);
 	void setColor(float red, float green, float blue, float alpha);
 	void setRotation(float rotation);

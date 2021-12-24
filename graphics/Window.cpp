@@ -4,7 +4,6 @@
 #include <random>
 
 #include "Window.h"
-#include "../game/Unit.h"
 
 
 const int DEFAULT_BUFFER_SIZE = 1200;

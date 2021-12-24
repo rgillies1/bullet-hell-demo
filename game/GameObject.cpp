@@ -12,7 +12,8 @@ void GameObject::buildDefaultHitbox()
 	hitbox = std::make_shared<Polygon>(box);
 }
 
-GameObject::GameObject(std::string name, int id, Sprite sprite, glm::vec2 position, float rotation, glm::vec2 size, glm::vec2 velocity, glm::vec4 color)
+GameObject::GameObject(std::string name, int id, Sprite sprite, glm::vec2 position, float rotation, glm::vec2 size, glm::vec2 velocity, 
+	glm::vec2 acceleration, glm::vec4 color)
 	: sprite(sprite)
 {
 	this->name = name;
@@ -22,6 +23,7 @@ GameObject::GameObject(std::string name, int id, Sprite sprite, glm::vec2 positi
 	this->size = size;
 	this->rotation = rotation;
 	this->velocity = velocity;
+	this->acceleration = acceleration;
 	this->color = color;
 	this->alive = true;
 	this->timeOfLastFire = 0.0f;
@@ -31,7 +33,7 @@ GameObject::GameObject(std::string name, int id, Sprite sprite, glm::vec2 positi
 }
 
 GameObject::GameObject(std::string name, int id, Sprite sprite, float posX, float posY, float rotation, float sizeX, float sizeY,
-	float velocityX, float velocityY, float red, float green, float blue, float alpha)
+	float velocityX, float velocityY, float accelerationX, float accelerationY, float red, float green, float blue, float alpha)
 	: sprite(sprite)
 {
 	this->name = name;
@@ -41,6 +43,7 @@ GameObject::GameObject(std::string name, int id, Sprite sprite, float posX, floa
 	position = glm::vec2(posX, posY);
 	size = glm::vec2(sizeX, sizeY);
 	velocity = glm::vec2(velocityX, velocityY);
+	acceleration = glm::vec2(accelerationX, accelerationY);
 	color = glm::vec4(red, green, blue, alpha);
 	this->alive = true;
 	this->timeOfLastFire = 0.0f;
@@ -132,6 +135,11 @@ glm::vec2 GameObject::getVelocity() const
 	return velocity;
 }
 
+glm::vec2 GameObject::getAcceleration() const
+{
+	return acceleration;
+}
+
 void GameObject::setVelocity(glm::vec2 velocity)
 {
 	this->velocity = velocity;
@@ -140,6 +148,16 @@ void GameObject::setVelocity(glm::vec2 velocity)
 void GameObject::setVelocity(float velocityX, float velocityY)
 {
 	velocity = glm::vec2(velocityX, velocityY);
+}
+
+void GameObject::setAcceleration(glm::vec2 acceleration)
+{
+	this->acceleration = acceleration;
+}
+
+void GameObject::setAcceleration(float accelerationX, float accelerationY)
+{
+	acceleration = glm::vec2(accelerationX, accelerationY);
 }
 
 glm::vec4 GameObject::getColor() const
@@ -171,6 +189,8 @@ void GameObject::update(float timeSinceLastFrame)
 {
 	glm::vec2 pos = this->getPosition();
 	glm::vec2 vel = this->getVelocity();
+	glm::vec2 acc = this->getAcceleration();
+	this->setVelocity(glm::vec2(vel.x + acc.x * timeSinceLastFrame, vel.y + acc.y * timeSinceLastFrame));
 	this->setPosition(glm::vec2(pos.x + vel.x * timeSinceLastFrame, pos.y + vel.y * timeSinceLastFrame));
 	updateFunction(this, timeSinceLastFrame);
 }
@@ -205,7 +225,7 @@ std::shared_ptr<Shape>& GameObject::getHitbox()
 	return hitbox;
 }
 
-std::queue<std::pair<BulletInfo, std::function<void(GameObject*, float)>>>& GameObject::getBulletsToFire()
+std::queue<ObjectInfo>& GameObject::getBulletsToFire()
 {
 	return toFire;
 }
