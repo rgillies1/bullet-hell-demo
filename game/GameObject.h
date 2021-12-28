@@ -31,7 +31,7 @@ enum class HitboxShape
 struct ObjectInfo
 {
 	std::string name, spriteName;
-	int id;
+	int id, health;
 	float vel_x, vel_y, accel_x, accel_y, size_x, size_y, pos_x, pos_y, color_r, color_g, color_b, color_a, rotation, def_minFireDelay;
 	std::function<void(GameObject*, float)> updateFunction;
 	HitboxShape hitboxShape;
@@ -76,7 +76,7 @@ class GameObject
 {
 private:
 	std::string	name;
-	int			id, originId;
+	int			id, originId, health;
 
 	float		rotation;
 	float		timeOfLastFire;
@@ -96,11 +96,13 @@ public:
 		glm::vec2 velocity, glm::vec2 acceleration, glm::vec4 color);
 	GameObject(std::string name, int id, Sprite sprite, float posX, float posY, float rotation, float sizeX, float sizeY,
 		float velocityX, float velocityY, float accelerationX, float accelerationY, float red, float green, float blue, float alpha);
+	~GameObject();
 
 	bool					isAlive() const;
 	std::string				getName() const;
 	int						getID() const;
 	int						getOriginID() const;
+	int						getHealth() const;
 	Sprite					getSprite() const;
 	glm::vec2				getPosition() const;
 	glm::vec2				getSize() const;
@@ -132,6 +134,8 @@ public:
 	void setHitboxPolygon(std::vector<glm::vec2> vertices);
 	void setHitboxCompositePolygon(std::vector<Polygon> shapes);
 	void setHitboxCircle(float x, float y, float radius);
+	void hurt(int damage);
+	void heal(int amount);
 	void kill();
 	void update(float timeSinceLastFrame);
 

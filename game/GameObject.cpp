@@ -28,6 +28,7 @@ GameObject::GameObject(std::string name, int id, Sprite sprite, glm::vec2 positi
 	this->alive = true;
 	this->timeOfLastFire = 0.0f;
 	this->minFireDelay = 0.0f;
+	this->health = 1;
 	updateFunction = [](GameObject* obj, float timeSinceLastFrame) {};
 	buildDefaultHitbox();
 }
@@ -48,8 +49,14 @@ GameObject::GameObject(std::string name, int id, Sprite sprite, float posX, floa
 	this->alive = true;
 	this->timeOfLastFire = 0.0f;
 	this->minFireDelay = 0.0f;
+	this->health = 1;
 	updateFunction = [](GameObject* obj, float timeSinceLastFrame) {};
 	buildDefaultHitbox();
+}
+
+GameObject::~GameObject()
+{
+	
 }
 
 void GameObject::kill()
@@ -80,6 +87,11 @@ void GameObject::setOriginID(int originId)
 int GameObject::getOriginID() const
 {
 	return originId;
+}
+
+int GameObject::getHealth() const
+{
+	return health;
 }
 
 Sprite GameObject::getSprite() const
@@ -243,5 +255,17 @@ void GameObject::setHitboxCompositePolygon(std::vector<Polygon> shapes)
 void GameObject::setHitboxCircle(float x, float y, float radius)
 {
 	this->hitbox.reset(new Circle(x + radius, y + radius, radius));
+}
+
+void GameObject::hurt(int damage)
+{
+	this->health -= damage;
+	if (this->health <= 0) this->kill();
+	std::cout << this->getName() << " health: " << this->getHealth() << std::endl;
+}
+
+void GameObject::heal(int amount)
+{
+	this->health += amount;
 }
 

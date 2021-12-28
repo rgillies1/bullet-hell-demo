@@ -2,7 +2,6 @@
 
 void ScriptExecutor::execute(Game& game, Script script)
 {
-	std::cout << "EXECUTING " << script.getScriptName() << std::endl;
 	for (size_t commandIndex = lastCommandExecuted; commandIndex < script.numCommands();)
 	{
 		Command nextCommand = script.getCommand(commandIndex);

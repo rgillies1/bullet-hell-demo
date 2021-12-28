@@ -31,10 +31,8 @@ public:
 	Controller(Game& game, InputType inputType, ScriptCollection& scripts, ScriptExecutor& executor, Engine& engine, int width, int height);
 	void init();
 	void processInput(GLFWwindow* window);
-	const std::vector<GameObject>& updateObjects(float timeSinceLastFrame);
-	void makeBullet(GameObject& origin, BulletType type, Sprite sprite, float bulletWidth, float bulletHeight, float posX, float posY);
+	const std::unordered_map<int, GameObject>& updateObjects(float timeSinceLastFrame);
 	void processScripts();
-	void clean();
 };
 
 #endif

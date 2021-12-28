@@ -78,7 +78,7 @@ void Controller::processInput(GLFWwindow* window)
 	}
 }
 
-const std::vector<GameObject>& Controller::updateObjects(float timeSinceLastFrame)
+const std::unordered_map<int, GameObject>& Controller::updateObjects(float timeSinceLastFrame)
 {
 	game.updateObjects(timeSinceLastFrame);
 
@@ -92,19 +92,10 @@ const std::vector<GameObject>& Controller::updateObjects(float timeSinceLastFram
 		}
 		if(lastExecutedScript < scripts.numScripts())
 			executor.execute(game, scripts.getScript(lastExecutedScript));
+
+		game.clean();
 	}
 	return game.getObjects();
-}
-
-void Controller::clean()
-{
-	for (int i = 0; i < game.getObjects().size(); i++)
-	{
-		if (!game.getObjects().at(i).isAlive())
-		{
-			game.getObjects().erase(game.getObjects().begin() + i);
-		}
-	}
 }
 
 void Controller::processScripts()

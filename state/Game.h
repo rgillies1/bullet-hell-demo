@@ -17,8 +17,11 @@ private:
 	bool paused;
 	ResourceManager& manager;
 
-	std::vector<GameObject> objects;
+	//std::vector<GameObject> objects;
+	std::unordered_map<int, GameObject> objects;
 	std::vector<GameObject> temp;
+
+	GameObject* player;
 
 	std::unordered_map<Binding, bool> keyStrokes;
 	std::unordered_map<std::string, std::string> properties;
@@ -34,11 +37,12 @@ private:
 public:
 	Game(float playableWidth, float playableHeight, ResourceManager& manager);
 	~Game();
-	std::vector<GameObject>& getObjects();
+	std::unordered_map<int, GameObject>& getObjects();
 	void init();
 	void updateObjects(float timeSinceLastUpdate);
 	void addObject(GameObject& toAdd);
 	void addObject(ObjectInfo& info);
+	void clean();
 	int getBulletIdBase()
 	{
 		return bulletIDBase;
@@ -56,7 +60,7 @@ public:
 	{
 		try
 		{
-			return objects[id].isAlive();
+			return objects.at(id).isAlive();
 		}
 		catch (std::exception)
 		{
@@ -65,7 +69,7 @@ public:
 	}
 	void killObjectById(int id)
 	{
-		objects[id].kill();
+		objects.at(id).kill();
 	}
 	std::unordered_map<Binding, bool>& getKeyStrokes()
 	{

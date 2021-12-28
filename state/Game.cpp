@@ -42,7 +42,8 @@ void Game::init()
 
 void Game::addObject(GameObject& toAdd)
 {
-	objects.push_back(toAdd);
+	objects.emplace(toAdd.getID(), toAdd);
+	if (objects.size() == 1) player = &objects.at(0);
 }
 
 void Game::addObject(ObjectInfo& info)
@@ -92,7 +93,24 @@ void Game::addObject(ObjectInfo& info)
 		break;
 	}
 
-	objects.push_back(toAdd);
+	addObject(toAdd);
+}
+
+void Game::clean()
+{
+	if (!player->isAlive()) exit(0);
+	auto it = objects.begin();
+	while (it != objects.end())
+	{
+		if (it->second.isAlive())
+		{
+			it++;
+		}
+		else
+		{
+			it = objects.erase(it);
+		}
+	}
 }
 
 void Game::adjustPosition(GameObject& obj)
@@ -172,38 +190,33 @@ void Game::processKeystrokes()
 	if (keyStrokes[Binding::PLAYER_MOVE_UP] == true)
 	{
 		float moveSpeed = atof(properties["player_move_speed"].c_str());
-		GameObject& player = objects[0];
-		player.setVelocity(player.getVelocity().x, -moveSpeed);
+		player->setVelocity(player->getVelocity().x, -moveSpeed);
 	}
 	if (keyStrokes[Binding::PLAYER_MOVE_DOWN] == true)
 	{
 		float moveSpeed = atof(properties["player_move_speed"].c_str());
-		GameObject& player = objects[0];
-		player.setVelocity(player.getVelocity().x, moveSpeed);
+		player->setVelocity(player->getVelocity().x, moveSpeed);
 	}
 	if (keyStrokes[Binding::PLAYER_MOVE_LEFT] == true)
 	{
 		float moveSpeed = atof(properties["player_move_speed"].c_str());
-		GameObject& player = objects[0];
-		player.setVelocity(-moveSpeed, player.getVelocity().y);
+		player->setVelocity(-moveSpeed, player->getVelocity().y);
 	}
 	if (keyStrokes[Binding::PLAYER_MOVE_RIGHT] == true)
 	{
 		float moveSpeed = atof(properties["player_move_speed"].c_str());
-		GameObject& player = objects[0];
-		player.setVelocity(moveSpeed, player.getVelocity().y);
+		player->setVelocity(moveSpeed, player->getVelocity().y);
 	}
 	if (keyStrokes[Binding::PLAYER_FIRE_UP] == true)
 	{
 		float bulletSpeed = atof(properties["player_bullet_speed"].c_str());
-		GameObject& player = objects[0];
-		player.setRotation(0.0f);
-		float time = glfwGetTime() - player.getTimeOfLastFire();
-		if (abs(time) < player.getMinFireDelay()) return;
-		else player.setTimeOfLastFire(glfwGetTime());
+		player->setRotation(0.0f);
+		float time = glfwGetTime() - player->getTimeOfLastFire();
+		if (abs(time) < player->getMinFireDelay()) return;
+		else player->setTimeOfLastFire(glfwGetTime());
 
-		pos_x = (player.getPosition().x + (player.getSize().x / 2)) - (size_x / 2);
-		pos_y = (player.getPosition().y - size_y);
+		pos_x = (player->getPosition().x + (player->getSize().x / 2)) - (size_x / 2);
+		pos_y = (player->getPosition().y - size_y);
 		vel_y = -bulletSpeed;
 
 		ObjectInfo bullet(name, id, spriteName,
@@ -213,20 +226,19 @@ void Game::processKeystrokes()
 			updateFunction, HitboxShape::CIRCLE,
 			hitboxInfo);
 
-		fireBullet(player, bullet);
+		fireBullet(*player, bullet);
 	}
 	if (keyStrokes[Binding::PLAYER_FIRE_DOWN] == true)
 	{
 
 		float bulletSpeed = atof(properties["player_bullet_speed"].c_str());
-		GameObject& player = objects[0];
-		player.setRotation(180.0f);
-		float time = glfwGetTime() - player.getTimeOfLastFire();
-		if (abs(time) < player.getMinFireDelay()) return;
-		else player.setTimeOfLastFire(glfwGetTime());
+		player->setRotation(180.0f);
+		float time = glfwGetTime() - player->getTimeOfLastFire();
+		if (abs(time) < player->getMinFireDelay()) return;
+		else player->setTimeOfLastFire(glfwGetTime());
 
-		pos_x = (player.getPosition().x + (player.getSize().x / 2)) - (size_x / 2);
-		pos_y = (player.getPosition().y + player.getSize().y);
+		pos_x = (player->getPosition().x + (player->getSize().x / 2)) - (size_x / 2);
+		pos_y = (player->getPosition().y + player->getSize().y);
 		vel_y = bulletSpeed;
 
 		ObjectInfo bullet(name, id, spriteName,
@@ -236,19 +248,18 @@ void Game::processKeystrokes()
 			updateFunction, HitboxShape::CIRCLE,
 			hitboxInfo);
 
-		fireBullet(player, bullet);
+		fireBullet(*player, bullet);
 	}
 	if (keyStrokes[Binding::PLAYER_FIRE_LEFT] == true)
 	{
 		float bulletSpeed = atof(properties["player_bullet_speed"].c_str());
-		GameObject& player = objects[0];
-		player.setRotation(270.0f);
-		float time = glfwGetTime() - player.getTimeOfLastFire();
-		if (abs(time) < player.getMinFireDelay()) return;
-		else player.setTimeOfLastFire(glfwGetTime());
+		player->setRotation(270.0f);
+		float time = glfwGetTime() - player->getTimeOfLastFire();
+		if (abs(time) < player->getMinFireDelay()) return;
+		else player->setTimeOfLastFire(glfwGetTime());
 
-		pos_x = player.getPosition().x - size_x;
-		pos_y = (player.getPosition().y + (player.getSize().y / 2)) - (size_y / 2);
+		pos_x = player->getPosition().x - size_x;
+		pos_y = (player->getPosition().y + (player->getSize().y / 2)) - (size_y / 2);
 		vel_x = -bulletSpeed;
 
 		ObjectInfo bullet(name, id, spriteName,
@@ -258,19 +269,18 @@ void Game::processKeystrokes()
 			updateFunction, HitboxShape::CIRCLE,
 			hitboxInfo);
 
-		fireBullet(player, bullet);
+		fireBullet(*player, bullet);
 	}
 	if (keyStrokes[Binding::PLAYER_FIRE_RIGHT] == true)
 	{
 		float bulletSpeed = atof(properties["player_bullet_speed"].c_str());
-		GameObject& player = objects[0];
-		player.setRotation(90.0f);
-		float time = glfwGetTime() - player.getTimeOfLastFire();
-		if (abs(time) < player.getMinFireDelay()) return;
-		else player.setTimeOfLastFire(glfwGetTime());
+		player->setRotation(90.0f);
+		float time = glfwGetTime() - player->getTimeOfLastFire();
+		if (abs(time) < player->getMinFireDelay()) return;
+		else player->setTimeOfLastFire(glfwGetTime());
 
-		pos_x = player.getPosition().x + player.getSize().x;
-		pos_y = (player.getPosition().y + (player.getSize().y / 2)) - (size_y / 2);
+		pos_x = player->getPosition().x + player->getSize().x;
+		pos_y = (player->getPosition().y + (player->getSize().y / 2)) - (size_y / 2);
 		vel_x = bulletSpeed;
 
 		ObjectInfo bullet(name, id, spriteName,
@@ -280,7 +290,7 @@ void Game::processKeystrokes()
 			updateFunction, HitboxShape::CIRCLE,
 			hitboxInfo);
 
-		fireBullet(player, bullet);
+		fireBullet(*player, bullet);
 	}
 	if (keyStrokes[Binding::PLAYER_SLOW] == true)
 	{
@@ -292,7 +302,7 @@ void Game::processKeystrokes()
 	}
 }
 
-std::vector<GameObject>& Game::getObjects()
+std::unordered_map<int, GameObject>& Game::getObjects()
 {
 	return objects;
 }
@@ -300,16 +310,16 @@ std::vector<GameObject>& Game::getObjects()
 void Game::updateObjects(float timeSinceLastUpdate)
 {
 	processKeystrokes();
-	for (GameObject& obj : objects)
+	for (auto& objPair : objects)
 	{
 		if (paused) return;
-		obj.update(timeSinceLastUpdate);
-		processBullets(obj);
-		adjustPosition(obj);
+		objPair.second.update(timeSinceLastUpdate);
+		processBullets(objPair.second);
+		adjustPosition(objPair.second);
 	}
 	for (GameObject bullet : temp)
 	{
-		objects.push_back(bullet);
+		addObject(bullet);
 	}
 	temp.clear();
 }

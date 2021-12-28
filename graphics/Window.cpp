@@ -214,14 +214,18 @@ bool Window::beginRendering(Controller controller)
 		timeSinceLastFrame = currentTime - timeOfLastFrame;
 		timeOfLastFrame = currentTime;
 
-		const std::vector<GameObject>& objects = controller.updateObjects(timeSinceLastFrame);
+		const std::unordered_map<int, GameObject>& objects = controller.updateObjects(timeSinceLastFrame);
 
-		for (const GameObject& object : objects)
+		for (const auto& object : objects)
 		{
-			draw(object.getSprite(), object.getPosition(), object.getSize(), object.getRotation(), object.getColor());
+			draw(object.second.getSprite(), 
+				object.second.getPosition(), 
+				object.second.getSize(), 
+				object.second.getRotation(), 
+				object.second.getColor());
 		}
 
-		controller.clean();
+		//controller.clean();
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();

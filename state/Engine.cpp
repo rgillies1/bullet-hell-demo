@@ -33,9 +33,11 @@ bool Engine::has_seperating_axis(GameObject* a, GameObject* b)
 	return false;
 }
 
-bool Engine::has_seperating_axis(CollisionPair& pair)
+bool Engine::has_seperating_axis(std::unordered_map<int, GameObject>& objects, CollisionPair& pair)
 {
-	return has_seperating_axis(&pair.obj1, &pair.obj2);
+	GameObject& obj1 = objects.at(pair.id1);
+	GameObject& obj2 = objects.at(pair.id2);
+	return has_seperating_axis(&obj1, &obj2);
 }
 
 bool Engine::SAT_poly_poly(Shape* poly1, Shape* poly2)
@@ -260,20 +262,20 @@ bool Engine::SAT_circle_circle(Shape* circ1, Shape* circ2)
 	else return true;
 }
 
-void Engine::sweep_and_prune(std::vector<GameObject>& objects,
-	std::unordered_set<CollisionPair, CollisionPairHasher, CollisionPairComparator>& collisionPairs, 
-	std::function<bool(GameObject&, GameObject&)> sort_function, 
-	std::function<bool(GameObject&, GameObject&)> prune_function,
-	int bulletBaseID)
+void Engine::sweep_and_prune(std::unordered_map<int, GameObject>& objects,
+	std::unordered_set<CollisionPair, CollisionPairHasher, CollisionPairComparator>& collisionPairs,
+	std::function<bool(std::pair<int, GameObject>&, std::pair<int, GameObject>&)> sort_function,
+	std::function<bool(GameObject&, GameObject&)> prune_function, int bulletBaseID)
 {
 	std::list<GameObject*> sweep;
+	std::vector<std::pair<int, GameObject>> sortedObjects(objects.begin(), objects.end());
+	std::sort(sortedObjects.begin(), sortedObjects.end(), sort_function);
 
-	std::sort(objects.begin(), objects.end(), sort_function);
-	GameObject& first = objects[0];
+	GameObject& first = sortedObjects.at(0).second;
 	sweep.push_back(&first);
 	for (int i = 1; i < objects.size(); i++)
 	{
-		GameObject& next = objects[i];
+		GameObject& next = sortedObjects.at(i).second;
 		for (auto it = sweep.begin(); it != sweep.end();)
 		{
 			if (**it == next)
@@ -289,13 +291,33 @@ void Engine::sweep_and_prune(std::vector<GameObject>& objects,
 			{
 				if (next.getOriginID() != (*it)->getOriginID() && !(next.getID() >= bulletBaseID && (*it)->getID() >= bulletBaseID))
 				{
-					collisionPairs.insert(CollisionPair(next, **it));
+					collisionPairs.insert(CollisionPair(next.getID(), (*it)->getID()));
 				}
 				it++;
 			}
 		}
 		sweep.push_back(&next);
 	}
+}
+
+bool sweepX(std::pair<int, GameObject>& obj1, std::pair<int, GameObject>& obj2)
+{
+	return obj1.second.getPosition().x < obj2.second.getPosition().x;
+}
+
+bool sweepY(std::pair<int, GameObject>& obj1, std::pair<int, GameObject>& obj2)
+{
+	return obj1.second.getPosition().y < obj2.second.getPosition().y;
+}
+
+bool pruneX(GameObject& obj1, GameObject& obj2)
+{
+	return obj1.getPosition().x > obj2.getPosition().x + obj2.getSize().x;
+}
+
+bool pruneY(GameObject& obj1, GameObject& obj2)
+{
+	return obj1.getPosition().y > obj2.getPosition().y + obj2.getSize().y;
 }
 
 void Engine::doCollisions(Game& game)
@@ -305,13 +327,13 @@ void Engine::doCollisions(Game& game)
 		std::list<GameObject*> sweep;
 		std::unordered_set<CollisionPair, CollisionPairHasher, CollisionPairComparator> collisionPairs;
 
-		std::function<bool(GameObject&, GameObject&)> sweepX = [](GameObject& obj1, GameObject& obj2) -> bool { return obj1.getPosition().x < obj2.getPosition().x; };
+		/*std::function<bool(GameObject&, GameObject&)> sweepX = [](GameObject& obj1, GameObject& obj2) -> bool { return obj1.getPosition().x < obj2.getPosition().x; };
 		std::function<bool(GameObject&, GameObject&)> pruneX = [](GameObject& next, GameObject& it) -> bool { return next.getPosition().x > it.getPosition().x + it.getSize().x; };
 		std::function<bool(GameObject&, GameObject&)> sweepY = [](GameObject& obj1, GameObject& obj2) -> bool { return obj1.getPosition().y < obj2.getPosition().y; };
-		std::function<bool(GameObject&, GameObject&)> pruneY = [](GameObject& next, GameObject& it) -> bool { return next.getPosition().y > it.getPosition().y + it.getSize().y; };
+		std::function<bool(GameObject&, GameObject&)> pruneY = [](GameObject& next, GameObject& it) -> bool { return next.getPosition().y > it.getPosition().y + it.getSize().y; };*/
 
-		std::vector<GameObject> x_objects = game.getObjects();
-		std::vector<GameObject> y_objects = game.getObjects();
+		std::unordered_map<int, GameObject> x_objects = game.getObjects();
+		std::unordered_map<int, GameObject> y_objects = game.getObjects();
 		int bulletBaseID = game.getBulletIdBase();
 
 		sweep_and_prune(x_objects, collisionPairs, sweepX, pruneX, bulletBaseID);
@@ -319,9 +341,10 @@ void Engine::doCollisions(Game& game)
 
 		for (CollisionPair pair : collisionPairs)
 		{
-			if (!has_seperating_axis(pair))
+			if (!has_seperating_axis(game.getObjects(), pair))
 			{
-				std::cout << "Collision between " << pair << std::endl;
+				game.getObjects().at(pair.id1).hurt(1);
+				game.getObjects().at(pair.id2).hurt(1);
 			}
 		}
 
