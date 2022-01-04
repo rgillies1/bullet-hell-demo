@@ -327,11 +327,6 @@ void Engine::doCollisions(Game& game)
 		std::list<GameObject*> sweep;
 		std::unordered_set<CollisionPair, CollisionPairHasher, CollisionPairComparator> collisionPairs;
 
-		/*std::function<bool(GameObject&, GameObject&)> sweepX = [](GameObject& obj1, GameObject& obj2) -> bool { return obj1.getPosition().x < obj2.getPosition().x; };
-		std::function<bool(GameObject&, GameObject&)> pruneX = [](GameObject& next, GameObject& it) -> bool { return next.getPosition().x > it.getPosition().x + it.getSize().x; };
-		std::function<bool(GameObject&, GameObject&)> sweepY = [](GameObject& obj1, GameObject& obj2) -> bool { return obj1.getPosition().y < obj2.getPosition().y; };
-		std::function<bool(GameObject&, GameObject&)> pruneY = [](GameObject& next, GameObject& it) -> bool { return next.getPosition().y > it.getPosition().y + it.getSize().y; };*/
-
 		std::unordered_map<int, GameObject> x_objects = game.getObjects();
 		std::unordered_map<int, GameObject> y_objects = game.getObjects();
 		int bulletBaseID = game.getBulletIdBase();
@@ -343,6 +338,28 @@ void Engine::doCollisions(Game& game)
 		{
 			if (!has_seperating_axis(game.getObjects(), pair))
 			{
+				if (pair.id1 == 0)
+				{
+					std::cout << "POSITION: " << game.getObjects().at(pair.id1).getPosition().x << ", " << game.getObjects().at(pair.id1).getPosition().y << std::endl;
+					for (Polygon p : game.getObjects().at(pair.id1).getHitbox()->getVertexData().getCompPolygonVertices())
+					{
+						for (glm::vec2 v : p.getVertices())
+						{
+							std::cout << v.x << ", " << v.y << std::endl;
+						}
+					}
+				}
+				if (pair.id2 == 0)
+				{
+					std::cout << "POSITION:" << game.getObjects().at(pair.id2).getPosition().x << ", " << game.getObjects().at(pair.id2).getPosition().y << std::endl;
+					for (Polygon p : game.getObjects().at(pair.id2).getHitbox()->getVertexData().getCompPolygonVertices())
+					{
+						for (glm::vec2 v : p.getVertices())
+						{
+							std::cout << v.x << ", " << v.y << std::endl;
+						}
+					}
+				}
 				game.getObjects().at(pair.id1).hurt(1);
 				game.getObjects().at(pair.id2).hurt(1);
 			}

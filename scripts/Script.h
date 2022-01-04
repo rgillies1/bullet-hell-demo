@@ -25,16 +25,14 @@ private:
 	std::string scriptName;
 	int executionOrderLabel;
 	float beginWaitTime, endWaitTime;
-	std::vector<ObjectInfo> objects;
+	std::vector<GameObject> objects;
 	std::vector<Command> commands;
 public:
-	Script(std::string scriptName, int executionOrderLabel, float beginWaitTime, float endWaitTime,
-		std::vector<ObjectInfo> objects, std::vector<Command> commands)
+	Script(std::string scriptName, int executionOrderLabel,
+		std::vector<GameObject> objects, std::vector<Command> commands)
 	{
 		this->scriptName = scriptName;
 		this->executionOrderLabel = executionOrderLabel;
-		this->beginWaitTime = beginWaitTime;
-		this->endWaitTime = endWaitTime;
 		this->objects = objects;
 		this->commands = commands;
 	};
@@ -50,7 +48,7 @@ public:
 	{
 		return commands[index];
 	};
-	ObjectInfo& getObjectInfo(int index)
+	GameObject& getObjectInfo(int index)
 	{
 		return objects[index];
 	};
