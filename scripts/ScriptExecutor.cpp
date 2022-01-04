@@ -21,7 +21,6 @@ void ScriptExecutor::execute(Game& game, Script script)
 			}
 			else return;
 		}
-		std::cout << "NOT WAITING" << std::endl;
 		switch (nextCommand.command)
 		{
 		case ScriptCommand::WAIT_FOR:
@@ -36,14 +35,14 @@ void ScriptExecutor::execute(Game& game, Script script)
 		case ScriptCommand::PLACE_OBJECT:
 		{
 			lastObjectRetreived++;
-			ObjectInfo& info = script.getObjectInfo(lastObjectRetreived);
+			GameObject& info = script.getObjectInfo(lastObjectRetreived);
 			game.addObject(info);
 			break;
 		}
 		case ScriptCommand::PLACE_AND_WAIT_FOR:
 		{
 			lastObjectRetreived++;
-			ObjectInfo& info = script.getObjectInfo(lastObjectRetreived);
+			GameObject& info = script.getObjectInfo(lastObjectRetreived);
 			game.addObject(info);
 			waiting_for = true;
 			waitTime = nextCommand.info;
@@ -53,10 +52,10 @@ void ScriptExecutor::execute(Game& game, Script script)
 		case ScriptCommand::PLACE_AND_WAIT_UNTIL_DEATH:
 		{
 			lastObjectRetreived++;
-			ObjectInfo& info = script.getObjectInfo(lastObjectRetreived);
+			GameObject& info = script.getObjectInfo(lastObjectRetreived);
 			game.addObject(info);
 			waiting_until = true;
-			id_to_wait_for = info.id;
+			id_to_wait_for = info.getID();
 			break;
 		}
 		case ScriptCommand::KILL:

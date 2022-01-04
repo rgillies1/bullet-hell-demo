@@ -18,6 +18,28 @@ ResourceManager::~ResourceManager()
 	}
 }
 
+void ResourceManager::initialize(std::string infoFile, std::string textureBasePath)
+{
+	std::string infoFileFullPath = textureBasePath + infoFile;
+	std::ifstream inputStream(infoFileFullPath);
+	std::string lineFromStream;
+	if (!inputStream) throw std::exception("Failed to load texture information!");
+	while (std::getline(inputStream, lineFromStream))
+	{
+		std::stringstream ss(lineFromStream);
+		std::string textureName;
+		ss >> textureName;
+		std::string textureFileName;
+		ss >> textureFileName;
+		bool useAlpha;
+		ss >> useAlpha;
+
+		std::string fullTextureFilePath = textureBasePath + textureFileName;
+
+		generateSprite(textureName, fullTextureFilePath.c_str(), useAlpha);
+	}
+}
+
 void ResourceManager::generateShader(std::string shaderName, const char* vertexPath, const char* fragmentPath, const char* geometryPath)
 {
 	if (geometryPath != nullptr && sizeof(geometryPath) == 0)

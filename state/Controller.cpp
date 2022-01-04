@@ -1,6 +1,9 @@
 #include "Controller.h"
 #include <iostream>
 #include <algorithm>
+
+// TODO: add distinction / key binds for gamepad
+
 int num = 0;
 Controller::Controller(Game& game, InputType inputType, ScriptCollection& scripts, ScriptExecutor& executor, Engine& engine, int width, int height) 
 	: game(game), scripts(scripts), executor(executor), engine(engine)
@@ -8,6 +11,8 @@ Controller::Controller(Game& game, InputType inputType, ScriptCollection& script
 	this->inputType = inputType;
 	this->width = width;
 	this->height = height;
+	this->isPaused = false;
+	this->isEnded = false;
 }
 
 void Controller::init()
@@ -75,11 +80,13 @@ void Controller::processInput(GLFWwindow* window)
 	if (glfwGetKey(window, keyBinds[Binding::PAUSE]) == GLFW_PRESS)
 	{
 		game.togglePause();
+		isPaused = isPaused ? false : true;
 	}
 }
 
 const std::unordered_map<int, GameObject>& Controller::updateObjects(float timeSinceLastFrame)
 {
+	if (game.ended()) isEnded = true;
 	game.updateObjects(timeSinceLastFrame);
 
 	if (!game.isPaused())
@@ -101,4 +108,31 @@ const std::unordered_map<int, GameObject>& Controller::updateObjects(float timeS
 void Controller::processScripts()
 {
 
+}
+
+bool Controller::ended()
+{
+	return isEnded;
+}
+
+bool Controller::paused()
+{
+	return isPaused;
+}
+
+int Controller::playerHealth()
+{
+	return game.getPointerToPlayer()->getHealth();
+}
+
+int Controller::activeEnemyHealth()
+{
+	if (game.getPointerToActiveEnemy() != nullptr)
+		return game.getPointerToActiveEnemy()->getHealth();
+	else return -25;
+}
+
+int Controller::score()
+{
+	return game.getScore();
 }

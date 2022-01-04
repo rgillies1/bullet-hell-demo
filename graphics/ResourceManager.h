@@ -12,6 +12,7 @@ private:
 	std::map<std::string, Sprite> sprites;
 public:
 	~ResourceManager();
+	void initialize(std::string infoFile, std::string textureBasePath);
 	void generateShader(std::string shaderName, const char* vertexPath, const char* fragmentPath, const char* geometryPath = nullptr);
 	void generateShader(std::string shaderName, bool useGeometry);
 	void generateSprite(std::string name, const char* spritePath, bool useAlpha);

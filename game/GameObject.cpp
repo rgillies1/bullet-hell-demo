@@ -12,12 +12,15 @@ void GameObject::buildDefaultHitbox()
 	hitbox = std::make_shared<Polygon>(box);
 }
 
-GameObject::GameObject(std::string name, int id, Sprite sprite, glm::vec2 position, float rotation, glm::vec2 size, glm::vec2 velocity, 
-	glm::vec2 acceleration, glm::vec4 color)
-	: sprite(sprite)
+GameObject::GameObject(std::string name, int id, std::string spriteName, int health, int damage, int score, glm::vec2 position, float rotation, glm::vec2 size,
+	glm::vec2 velocity, glm::vec2 acceleration, glm::vec4 color)
 {
 	this->name = name;
 	this->id = id;
+	this->spriteName = spriteName;
+	this->damage = damage;
+	this->score = score;
+	this->health = health;
 	this->originId = id;
 	this->position = position;
 	this->size = size;
@@ -33,12 +36,15 @@ GameObject::GameObject(std::string name, int id, Sprite sprite, glm::vec2 positi
 	buildDefaultHitbox();
 }
 
-GameObject::GameObject(std::string name, int id, Sprite sprite, float posX, float posY, float rotation, float sizeX, float sizeY,
+GameObject::GameObject(std::string name, int id, std::string spriteName, int health, int damage, int score, float posX, float posY, float rotation, float sizeX, float sizeY,
 	float velocityX, float velocityY, float accelerationX, float accelerationY, float red, float green, float blue, float alpha)
-	: sprite(sprite)
 {
 	this->name = name;
 	this->id = id;
+	this->spriteName = spriteName;
+	this->damage = damage;
+	this->score = score;
+	this->health = health;
 	this->originId = id;
 	this->rotation = rotation;
 	position = glm::vec2(posX, posY);
@@ -64,6 +70,11 @@ void GameObject::kill()
 	alive = false;
 }
 
+void GameObject::fire(GameObject toFire)
+{
+	this->toFire.push_back(toFire);
+}
+
 bool GameObject::isAlive() const
 {
 	return alive;
@@ -77,6 +88,11 @@ std::string GameObject::getName() const
 int GameObject::getID() const
 {
 	return id;
+}
+
+void GameObject::setID(int id)
+{
+	this->id = id;
 }
 
 void GameObject::setOriginID(int originId)
@@ -94,14 +110,24 @@ int GameObject::getHealth() const
 	return health;
 }
 
-Sprite GameObject::getSprite() const
+int GameObject::getScore() const
 {
-	return sprite;
+	return score;
 }
 
-void GameObject::setSprite(Sprite sprite)
+int GameObject::getDamage() const
 {
-	this->sprite = sprite;
+	return damage;
+}
+
+std::string GameObject::getSpriteName() const
+{
+	return spriteName;
+}
+
+void GameObject::setSpriteName(std::string spriteName)
+{
+	this->spriteName = spriteName;
 }
 
 glm::vec2 GameObject::getPosition() const
@@ -237,7 +263,7 @@ std::shared_ptr<Shape>& GameObject::getHitbox()
 	return hitbox;
 }
 
-std::queue<ObjectInfo>& GameObject::getBulletsToFire()
+std::vector<GameObject>& GameObject::getBulletsToFire()
 {
 	return toFire;
 }
