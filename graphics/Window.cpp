@@ -8,6 +8,7 @@
 
 #include "Window.h"
 
+// TODO: get/design actual sprites instead of squares, vector shapes and Arial font
 
 const int DEFAULT_BUFFER_SIZE = 1200;
 
@@ -79,14 +80,12 @@ void Window::initFreeType(std::string fontName, int renderSize)
 	std::string fontPath = fontPathBegin + fontName + fontExtension;
 	if (FT_Init_FreeType(&FTLib))
 	{
-		std::cout << "Error initializing FreeType!" << std::endl;
-		return;
+		throw std::exception("Error initializing FreeType!");
 	}
 
 	if (FT_New_Face(FTLib, fontPath.c_str(), 0, &currentFace))
 	{
-		std::cout << "Error initializing face!" << std::endl;
-		return;
+		throw std::exception("Error initializing face!");
 	}
 
 	FT_Set_Pixel_Sizes(currentFace, 0, renderSize);
@@ -231,6 +230,17 @@ Window::Window(int width, int height, const char* name, ResourceManager& manager
 	this->playabeWidth = 0;
 	this->playableHeight = 0;
 	this->name = name;
+	this->EBO = 0;
+	this->VAO = 0;
+	this->VBO = 0;
+	this->enemyInfoX = -1;
+	this->enemyInfoY = -1;
+	this->fontRenderSize = 0;
+	this->playerInfoX = -1;
+	this->playerInfoY = -1;
+	this->typeEBO = 0;
+	this->typeVAO = 0;
+	this->typeVBO = 0;
 	this->window = glfwCreateWindow(width, height, name, NULL, NULL);
 	if (!window)
 		throw std::exception("Failed to initialize window");

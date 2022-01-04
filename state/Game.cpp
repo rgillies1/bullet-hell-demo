@@ -5,6 +5,8 @@
 #include <iostream>
 #include <algorithm>
 
+// HACK: some recent change now causes the game to segfault after the player dies
+
 Game::Game(float playableWidth, float playableHeight, float widthOffset, float heightOffset, ResourceManager& manager)
 	: manager(manager)
 {
@@ -47,62 +49,6 @@ void Game::addObject(GameObject& toAdd)
 	if (objects.size() == 1) player = &objects.at(0);
 	else if (activeEnemy == nullptr) activeEnemy = &objects.at(toAdd.getID());
 }
-
-//void Game::addObject(GameObject& info)
-//{
-//	GameObject toAdd(info.name, info.id, manager.getSprite(info.spriteName),
-//		info.pos_x, info.pos_y, info.rotation, info.size_x, info.size_y,
-//		info.vel_x, info.vel_y, info.accel_x, info.accel_y, info.color_r, 
-//		info.color_b, info.color_g, info.color_a);
-//	toAdd.setUpdateFunction(info.updateFunction);
-//	toAdd.setMinFireDelay(info.def_minFireDelay);
-//	switch (info.hitboxShape)
-//	{
-//	case HitboxShape::CIRCLE:
-//		toAdd.setHitboxCircle(toAdd.getPosition().x, toAdd.getPosition().y, info.hitboxInfo[0]);
-//		break;
-//	case HitboxShape::POLYGON:
-//	{
-//		std::vector<glm::vec2> coords;
-//		for (int i = 0; i < info.hitboxInfo.size() - 1; i += 2)
-//		{
-//			float x_coord = info.hitboxInfo[i] + info.pos_x;
-//			float y_coord = info.hitboxInfo[i + 1] + info.pos_y;
-//			glm::vec2 coord(x_coord, y_coord);
-//			coords.push_back(coord);
-//		}
-//		toAdd.setHitboxPolygon(coords);
-//	}
-//		break;
-//	case HitboxShape::COMPOSITE_POLYGON:
-//	{
-//		std::vector<Polygon> polys;
-//		std::vector<glm::vec2> polyHitboxes;
-//		for (int i = 0; i < info.hitboxInfo.size() - 1; i += 2)
-//		{
-//			std::cout << info.hitboxInfo[i] << std::endl;
-//			std::cout << info.hitboxInfo[i + 1] << std::endl;
-//			if (info.hitboxInfo[i] == -1 || info.hitboxInfo[i + 1] == -1)
-//			{
-//				polys.push_back(Polygon(polyHitboxes));
-//				std::cout << "gen polygon" << std::endl;
-//				polyHitboxes.clear();
-//			}
-//			else
-//			{
-//				float x_coord = info.hitboxInfo[i] + info.pos_x;
-//				float y_coord = info.hitboxInfo[i + 1] + info.pos_y;
-//				glm::vec2 coord(x_coord, y_coord);
-//				polyHitboxes.push_back(coord);
-//			}
-//		}
-//		toAdd.setHitboxCompositePolygon(polys);
-//	}
-//		break;
-//	}
-//
-//	addObject(toAdd);
-//}
 
 void Game::clean()
 {

@@ -1,6 +1,9 @@
 #include "Controller.h"
 #include <iostream>
 #include <algorithm>
+
+// TODO: add distinction / key binds for gamepad
+
 int num = 0;
 Controller::Controller(Game& game, InputType inputType, ScriptCollection& scripts, ScriptExecutor& executor, Engine& engine, int width, int height) 
 	: game(game), scripts(scripts), executor(executor), engine(engine)
@@ -8,6 +11,8 @@ Controller::Controller(Game& game, InputType inputType, ScriptCollection& script
 	this->inputType = inputType;
 	this->width = width;
 	this->height = height;
+	this->isPaused = false;
+	this->isEnded = false;
 }
 
 void Controller::init()

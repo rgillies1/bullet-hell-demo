@@ -1,5 +1,7 @@
 #include "ScriptInitializer.h"
 
+// TODO: script file parsing so scripts are not hard-coded and compiled
+
 int numTestTargets = 0;
 
 GameObject makeTestTarget(Game& game, float x, float y)

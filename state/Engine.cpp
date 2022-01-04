@@ -2,6 +2,8 @@
 #include <unordered_set>
 #include "Engine.h"
 
+// TODO: collision algorithm profiling (sweep and prune can lag with clusters of objects)
+
 bool Engine::has_seperating_axis(GameObject* a, GameObject* b)
 {
 	Shape* hitbox1 = a->getHitbox().get();
@@ -338,28 +340,6 @@ void Engine::doCollisions(Game& game)
 		{
 			if (!has_seperating_axis(game.getObjects(), pair))
 			{
-				if (pair.id1 == 0)
-				{
-					std::cout << "POSITION: " << game.getObjects().at(pair.id1).getPosition().x << ", " << game.getObjects().at(pair.id1).getPosition().y << std::endl;
-					for (Polygon p : game.getObjects().at(pair.id1).getHitbox()->getVertexData().getCompPolygonVertices())
-					{
-						for (glm::vec2 v : p.getVertices())
-						{
-							std::cout << v.x << ", " << v.y << std::endl;
-						}
-					}
-				}
-				if (pair.id2 == 0)
-				{
-					std::cout << "POSITION:" << game.getObjects().at(pair.id2).getPosition().x << ", " << game.getObjects().at(pair.id2).getPosition().y << std::endl;
-					for (Polygon p : game.getObjects().at(pair.id2).getHitbox()->getVertexData().getCompPolygonVertices())
-					{
-						for (glm::vec2 v : p.getVertices())
-						{
-							std::cout << v.x << ", " << v.y << std::endl;
-						}
-					}
-				}
 				game.getObjects().at(pair.id1).hurt(1);
 				game.getObjects().at(pair.id2).hurt(1);
 			}

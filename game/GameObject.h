@@ -21,59 +21,6 @@
 #include "Shapes/CompositePolygon.h"
 #include "Shapes/Circle.h"
 
-//enum class HitboxShape
-//{
-//	CIRCLE, POLYGON, COMPOSITE_POLYGON
-//};
-//
-//struct GameObject
-//{
-//	std::string name, spriteName;
-//	int id, health, damage, score;
-//	float vel_x, vel_y, accel_x, accel_y, size_x, size_y, pos_x, pos_y, color_r, color_g, color_b, color_a, rotation, def_minFireDelay;
-//	std::function<void(GameObject*, float)> updateFunction;
-//	HitboxShape hitboxShape;
-//	std::vector<float> hitboxInfo;
-//	GameObject(std::string name,
-//		int id, std::string spriteName,
-//		int health, int damage, int score,
-//		float pos_x, float pos_y,
-//		float rotation, float size_x,
-//		float size_y, float vel_x,
-//		float vel_y , float accel_x,
-//		float accel_y, float color_r,
-//		float color_g, float color_b,
-//		float color_a, float minFireDelay,
-//		std::function<void(GameObject*, float)> updateFunction,
-//		HitboxShape hitboxShape,
-//		std::vector<float> hitboxInfo)
-//	{
-//		this->name = name;
-//		this->id = id;
-//		this->spriteName = spriteName;
-//		this->damage = damage;
-//		this->score = score;
-//		this->health = health;
-//		this->pos_x = pos_x;
-//		this->pos_y = pos_y;
-//		this->rotation = rotation;
-//		this->size_x = size_x;
-//		this->size_y = size_y;
-//		this->vel_x = vel_x;
-//		this->vel_y = vel_y;
-//		this->accel_x = accel_x;
-//		this->accel_y = accel_y;
-//		this->color_r = color_r;
-//		this->color_b = color_b;
-//		this->color_g = color_g;
-//		this->color_a = color_a;
-//		this->def_minFireDelay = minFireDelay;
-//		this->updateFunction = updateFunction;
-//		this->hitboxShape = hitboxShape;
-//		this->hitboxInfo = hitboxInfo;
-//	}
-//};
-
 class GameObject
 {
 private:
@@ -87,7 +34,6 @@ private:
 	bool		alive;
 	glm::vec2	position, size, velocity, acceleration;
 	glm::vec4	color;
-	//Sprite		sprite;
 
 	std::function<void(GameObject*, float)> updateFunction;
 	std::vector<GameObject> toFire;
